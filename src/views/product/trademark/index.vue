@@ -175,16 +175,19 @@ const deleteHandle = (val: TrademarkItem) => {
 };
 // 编辑操作
 const editHandle = (val: TrademarkItem) => {
-  console.log(val);
   formData.id = val.id;
   formData.tmName = val.tmName;
   formData.logoUrl = val.logoUrl;
   dialogAddOrUpdateVisible.value = true;
+  // 清除校验规则
+  formRef.value.clearValidate();
 };
 const addHandle = (id: number) => {
   clearFormData();
   dialogAddOrUpdateVisible.value = true;
   formData.id = id;
+  // 清除校验规则
+  formRef.value.clearValidate();
 };
 const clearFormData = () => {
   (formData.logoUrl = ""), (formData.tmName = ""), (formData.id = 0);
@@ -228,6 +231,7 @@ const handleLOGOSuccess: UploadProps["onSuccess"] = (response, uploadFile) => {
   //   formData.logoUrl = URL.createObjectURL(uploadFile.raw!);
   //   上面拿到的会是localhost数据
   formData.logoUrl = response.data;
+  //   清除图片的验证信息
   formRef.value.clearValidate(["logoUrl"]);
   //   imageUrl.value = uploadFile.url as string;
 };
@@ -258,7 +262,13 @@ const formData = reactive({
   tmName: "",
   logoUrl: "",
 });
-// 表单校验规则
+/* 
+  表单校验规则
+    1.先从elementplus中引入FormRules
+    2.定义规则对象，类型是FormRules
+    3.将from组件的rules属性绑定该对象，并且每个item的prop属性值要和rules对象属性对应
+    4.使用的时候调用formRef.value.validate()
+*/
 const formRules = reactive<FormRules>({
   // https://github.com/yiminghe/async-validator
   tmName: [
