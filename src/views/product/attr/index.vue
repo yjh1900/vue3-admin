@@ -1,6 +1,7 @@
 <template>
   <div>
     <CategorySelector />
+    <AttrList />
   </div>
 </template>
 
@@ -12,6 +13,7 @@ export default {
 
 <script lang="ts" setup>
 import CategorySelector from "@/components/CategorySelector/index.vue";
+import AttrList from "./components/AttrList.vue";
 </script>
 
 <style scoped></style>

@@ -1,5 +1,5 @@
 <template>
-  <el-card class="box-card" shadow="never">
+  <el-card class="box-card" shadow="hover">
     <el-button type="primary" :icon="Plus" @click="addHandle(0)"
       >添加品牌</el-button
     >

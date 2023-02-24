@@ -1,39 +1,46 @@
 <template>
   <div>
-    <el-card class="category" shadow="never">
+    <el-card class="category" shadow="hover">
       <el-form :inline="true" class="demo-form-inline">
         <el-form-item label="一级分类">
           <el-select
-            v-model="categoryStore.category1Id"
+            v-model="category1Id"
             class="m-2"
             placeholder="请选择一级分类"
-            :change="category1Change()"
           >
             <el-option
               v-for="c1 in categoryStore.category1List"
               :key="c1.id"
               :label="c1.name"
-              :value="c1.name"
+              :value="c1.id"
             />
           </el-select>
         </el-form-item>
         <el-form-item label="二级分类">
-          <el-select v-model="value" class="m-2" placeholder="请选择二级分类">
+          <el-select
+            v-model="category2Id"
+            class="m-2"
+            placeholder="请选择二级分类"
+          >
             <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              v-for="c2 in categoryStore.category2List"
+              :key="c2.id"
+              :label="c2.name"
+              :value="c2.id"
             />
           </el-select>
         </el-form-item>
         <el-form-item label="三级分类">
-          <el-select v-model="value" class="m-2" placeholder="请选择三级分类">
+          <el-select
+            v-model="category3Id"
+            class="m-2"
+            placeholder="请选择三级分类"
+          >
             <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              v-for="c3 in categoryStore.category3List"
+              :key="c3.id"
+              :label="c3.name"
+              :value="c3.id"
             />
           </el-select>
         </el-form-item>
@@ -49,7 +56,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useCategoryStore } from "@/stores/category";
 
 const value = ref("");
@@ -59,7 +66,31 @@ onMounted(async () => {
   await categoryStore.getCategory1List();
 });
 
-const category1Change = () => {};
+const category1Id = computed({
+  get() {
+    return categoryStore.category1Id;
+  },
+  set(val) {
+    categoryStore.getCategory2List(val as number);
+  },
+});
+
+const category2Id = computed({
+  get() {
+    return categoryStore.category2Id;
+  },
+  set(val) {
+    categoryStore.getCategory3List(val as number);
+  },
+});
+const category3Id = computed({
+  get() {
+    return categoryStore.category3Id;
+  },
+  set(val) {
+    categoryStore.change3Id(val as number);
+  },
+});
 
 const options = [
   {
