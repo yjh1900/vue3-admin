@@ -56,18 +56,19 @@
                 @click="editHandle(row)"
               />
             </el-tooltip>
-            <!-- <el-tooltip
-                class="box-item"
-                effect="dark"
-                content="删除"
-                placement="bottom-start"
-              > -->
+
             <el-popconfirm
               confirm-button-text="确认"
               cancel-button-text="取消"
               :title="`确认删除${row.attrName}吗`"
               @confirm="deleteHandle(row)"
             >
+              <!-- <el-tooltip
+                class="box-item"
+                effect="dark"
+                content="删除"
+                placement="bottom-start"
+              > -->
               <template #reference>
                 <el-button type="danger" :icon="Delete" size="small" />
               </template>
@@ -86,7 +87,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { reactive, ref, watch, defineEmits } from "vue";
+import { ref, watch, defineEmits } from "vue";
 import type {
   AttrListDataList,
   AttrListData,
@@ -98,9 +99,13 @@ import { useCategoryStore } from "@/stores/category";
 const categoryStore = useCategoryStore();
 const loading = ref(false);
 
-const editHandle = (row) => {};
+// 点击编辑属性
+const editHandle = (row: AttrListData) => {
+  emit("setShowAttrList", false, row);
+};
+
 const deleteHandle = async (row: AttrListData) => {
-  await deleteAttrApi(row.id);
+  await deleteAttrApi(row.id as number);
   getAttrList();
   console.log("删除");
 };
