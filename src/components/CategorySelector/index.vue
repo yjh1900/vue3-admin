@@ -1,11 +1,7 @@
 <template>
   <div>
     <el-card class="category" shadow="hover">
-      <el-form
-        :inline="true"
-        class="demo-form-inline"
-        :disabled="!isShowAttrList"
-      >
+      <el-form :inline="true" class="demo-form-inline" :disabled="disabled">
         <el-form-item label="一级分类">
           <el-select
             v-model="category1Id"
@@ -96,7 +92,7 @@ const category3Id = computed({
   },
 });
 
-const props = defineProps(["isShowAttrList"]);
+const props = defineProps(["disabled"]);
 
 const options = [
   {

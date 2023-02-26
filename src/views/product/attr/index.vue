@@ -1,6 +1,6 @@
 <template>
   <div>
-    <CategorySelector :isShowAttrList="isShowAttrList" />
+    <CategorySelector :disabled="!isShowAttrList" />
     <!-- 
       切换显示组件：AttrList / AddOrUpdateAttr
 

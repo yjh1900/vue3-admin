@@ -115,6 +115,7 @@ import {
   nextTick,
   defineProps,
   onMounted,
+  type Ref,
 } from "vue";
 // input标签的实例对象
 import type { InputInstance } from "element-plus";
