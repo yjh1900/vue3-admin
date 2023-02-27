@@ -19,7 +19,7 @@
       -->
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="attrName" label="属性名称" width="150" />
-        <el-table-column prop="attrName" label="属性值列表">
+        <el-table-column label="属性值列表">
           <template #default="scope">
             <!-- <el-popover
             effect="light"

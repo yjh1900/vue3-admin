@@ -19,7 +19,11 @@
       @setShowAttrList="isShowAttrList = $event"
     />
     <AddOrUpdateAttr v-else @setShowAttrList="isShowAttrList = $event" /> -->
+    <!-- <keep-alive>
+      <component :is="AttrList" />
+    </keep-alive> -->
     <AttrList v-if="isShowAttrList" @setShowAttrList="setShowAttrList" />
+
     <AddOrUpdateAttr
       v-else
       @setShowAttrList="setShowAttrList"

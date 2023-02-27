@@ -1,5 +1,5 @@
 <template>
-  <div>AddSku</div>
+  <div>AddOrUpdateSpu</div>
 </template>
 
 <script lang="ts">

@@ -19,14 +19,20 @@ import AddSku from "./components/AddSku.vue";
 import AddOrUpdateSpu from "./components/AddOrUpdateSpu.vue";
 import SpuList from "./components/SpuList.vue";
 
-import { ref } from "vue";
+import { ref, provide } from "vue";
 const isSpuListShow = ref(true);
-const isComponentShow = ref(0);
+const isComponentShow = ref(1);
+const spuList = ref([]);
 enum curComponents {
   SpuList,
-  AddSku,
   AddOrUpdateSpu,
+  AddSku,
 }
+
+// SpuList数据
+provide("spuList", spuList);
+provide("isSpuListShow", isSpuListShow);
+provide("isComponentShow", isComponentShow);
 </script>
 
 <style scoped></style>

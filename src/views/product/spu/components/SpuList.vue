@@ -1,89 +1,74 @@
 <template>
   <div>
     <el-card class="mt-20" shadow="hover">
-      <el-form
-        ref="ruleFormRef"
-        :model="ruleForm"
-        :rules="rules"
-        label-width="120px"
-        class="demo-ruleForm"
-        status-icon
+      <el-button
+        type="primary"
+        :icon="Plus"
+        @click="addHandle()"
+        :disabled="!categoryStore.category3Id"
+        >添加SPU</el-button
       >
-        <el-form-item label="SPU名称" prop="name">
-          <el-input v-model="ruleForm.name" placeholder="请输入SPU名称" />
-        </el-form-item>
-
-        <el-form-item label="品牌" prop="region">
-          <el-select
-            v-model="ruleForm.count"
-            placeholder="Activity count"
-            :options="options"
-          />
-        </el-form-item>
-
-        <el-form-item label="SPU描述" prop="desc">
-          <el-input v-model="ruleForm.desc" type="textarea" />
-        </el-form-item>
-
-        <el-form-item label="Activity count" prop="count">
-          <el-select-v2
-            v-model="ruleForm.count"
-            placeholder="Activity count"
-            :options="options"
-          />
-        </el-form-item>
-        <el-form-item label="Activity time" required>
-          <el-col :span="11">
-            <el-form-item prop="date1">
-              <el-date-picker
-                v-model="ruleForm.date1"
-                type="date"
-                label="Pick a date"
-                placeholder="Pick a date"
-                style="width: 100%"
+      <el-table v-loading="loading" :data="spuList" class="mt-20" border>
+        <el-table-column type="index" label="序号" width="60" align="center" />
+        <el-table-column prop="spuName" label="SPU名称" width="150" />
+        <el-table-column prop="description" label="SPU描述" />
+        <el-table-column label="操作" width="300">
+          <template v-slot="{ row }">
+            <el-button
+              type="primary"
+              :icon="Plus"
+              @click="addSkuHandle()"
+              size="small"
+            />
+            <el-tooltip
+              class="box-item"
+              effect="dark"
+              content="编辑"
+              placement="bottom-start"
+            >
+              <el-button
+                type="warning"
+                :icon="Edit"
+                size="small"
+                @click="editHandle(row)"
               />
-            </el-form-item>
-          </el-col>
-          <el-col class="text-center" :span="2">
-            <span class="text-gray-500">-</span>
-          </el-col>
-          <el-col :span="11">
-            <el-form-item prop="date2">
-              <el-time-picker
-                v-model="ruleForm.date2"
-                label="Pick a time"
-                placeholder="Pick a time"
-                style="width: 100%"
-              />
-            </el-form-item>
-          </el-col>
-        </el-form-item>
-        <el-form-item label="Instant delivery" prop="delivery">
-          <el-switch v-model="ruleForm.delivery" />
-        </el-form-item>
-        <el-form-item label="Activity type" prop="type">
-          <el-checkbox-group v-model="ruleForm.type">
-            <el-checkbox label="Online activities" name="type" />
-            <el-checkbox label="Promotion activities" name="type" />
-            <el-checkbox label="Offline activities" name="type" />
-            <el-checkbox label="Simple brand exposure" name="type" />
-          </el-checkbox-group>
-        </el-form-item>
-        <el-form-item label="Resources" prop="resource">
-          <el-radio-group v-model="ruleForm.resource">
-            <el-radio label="Sponsorship" />
-            <el-radio label="Venue" />
-          </el-radio-group>
-        </el-form-item>
+            </el-tooltip>
 
-        <el-form-item>
-          <el-button type="primary" @click="submitForm(ruleFormRef)">
-            Create
-          </el-button>
-          <el-button @click="resetForm(ruleFormRef)">Reset</el-button>
-        </el-form-item>
-      </el-form>
-      <Test />
+            <el-popconfirm
+              confirm-button-text="确认"
+              cancel-button-text="取消"
+              :title="`确认删除${row.attrName}吗`"
+              @confirm="deleteHandle(row)"
+            >
+              <template #reference>
+                <el-button type="info" :icon="InfoFilled" size="small" />
+              </template>
+            </el-popconfirm>
+            <el-popconfirm
+              confirm-button-text="确认"
+              cancel-button-text="取消"
+              :title="`确认删除${row.attrName}吗`"
+              @confirm="deleteHandle(row)"
+            >
+              <template #reference>
+                <el-button type="danger" :icon="Delete" size="small" />
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination
+        class="mt-20"
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[3, 5, 10, 15]"
+        :disabled="disabled"
+        :background="background"
+        layout=" prev, pager, next, jumper, ->, sizes, total"
+        :total="total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
     </el-card>
   </div>
 </template>
@@ -95,105 +80,71 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { reactive, ref } from "vue";
-import type { FormInstance, FormRules } from "element-plus";
-import Test from "./test.vue";
+import { watch, ref, inject } from "vue";
+import { inputEmits, type FormInstance, type FormRules } from "element-plus";
+import { useCategoryStore } from "@/stores/category";
+import { Plus, Edit, Delete, InfoFilled } from "@element-plus/icons-vue";
+import { getSpuListApi } from "@/api/product/spu";
 
-const ruleFormRef = ref<FormInstance>();
-const ruleForm = reactive({
-  name: "Hello",
-  region: "",
-  count: "",
-  date1: "",
-  date2: "",
-  delivery: false,
-  type: [],
-  resource: "",
-  desc: "",
-});
+const total = ref(0); // 数据总条数
+const currentPage = ref(1); // 当前界面索引
+const pageSize = ref(5); // 每页数据条数
+const background = ref(false); // 是否为分页按钮添加背景色
+const disabled = ref(false); // 是否禁用分页
 
-const rules = reactive<FormRules>({
-  name: [
-    { required: true, message: "Please input Activity name", trigger: "blur" },
-    { min: 3, max: 5, message: "Length should be 3 to 5", trigger: "blur" },
-  ],
-  region: [
-    {
-      required: true,
-      message: "Please select Activity zone",
-      trigger: "change",
-    },
-  ],
-  count: [
-    {
-      required: true,
-      message: "Please select Activity count",
-      trigger: "change",
-    },
-  ],
-  date1: [
-    {
-      type: "date",
-      required: true,
-      message: "Please pick a date",
-      trigger: "change",
-    },
-  ],
-  date2: [
-    {
-      type: "date",
-      required: true,
-      message: "Please pick a time",
-      trigger: "change",
-    },
-  ],
-  type: [
-    {
-      type: "array",
-      required: true,
-      message: "Please select at least one activity type",
-      trigger: "change",
-    },
-  ],
-  resource: [
-    {
-      required: true,
-      message: "Please select activity resource",
-      trigger: "change",
-    },
-  ],
-  desc: [
-    { required: true, message: "Please input activity form", trigger: "blur" },
-  ],
-});
+// 切换每页数据条数
+const handleSizeChange = (val: number) => {
+  pageSize.value = val;
+  currentPage.value = 1;
+  getSpuList();
+};
+// 跳转页面
+const handleCurrentChange = (val: number) => {
+  currentPage.value = val;
+  getSpuList();
+};
 
-const submitForm = async (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  await formEl.validate((valid, fields) => {
-    if (valid) {
-      console.log("submit!");
-    } else {
-      console.log("error submit!", fields);
-    }
+// 依赖注入
+let spuList = inject("spuList");
+const isComponentShow = inject("isComponentShow");
+const isSpuListShow = inject("isSpuListShow");
+
+const addSkuHandle = () => {};
+
+const addHandle = () => {
+  isComponentShow.value = 1;
+  console.log(isComponentShow);
+  isSpuListShow.value = false;
+};
+const editHandle = (row) => {};
+const deleteHandle = (row) => {};
+
+const curList = ref([]);
+
+const categoryStore = useCategoryStore();
+const loading = ref(false);
+const getSpuList = async () => {
+  loading.value = true;
+  const res = await getSpuListApi({
+    limit: pageSize.value,
+    page: currentPage.value,
+    category3Id: categoryStore.category3Id,
   });
+  //   spuList.value = a;
+  spuList.value = res.records;
+  total.value = res.total;
+  loading.value = false;
+  console.log(spuList.value);
 };
 
-const resetForm = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.resetFields();
-};
-
-const options = Array.from({ length: 10000 }).map((_, idx) => ({
-  value: `${idx + 1}`,
-  label: `${idx + 1}`,
-}));
+watch(
+  () => categoryStore.category3Id,
+  (id) => {
+    if (!id) return;
+    getSpuList();
+  },
+  { immediate: true, deep: true }
+);
 </script>
 
-<style scoped>
-label {
-  font-weight: 700;
-}
-.AAAA {
-  font-weight: 700;
-}
-</style>
+<style scoped></style>
