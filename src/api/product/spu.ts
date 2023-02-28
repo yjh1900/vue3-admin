@@ -1,4 +1,5 @@
 import request from "@/utils/request";
+import type { GetSpuListResponse } from "./model/spuModel";
 
 enum Api {
   getSpuList = "/admin/product",
@@ -13,8 +14,16 @@ enum Api {
 //   });
 // };
 
-export const getSpuListApi = ({ page, limit, category3Id }) => {
-  return request.get(
+export const getSpuListApi = ({
+  page,
+  limit,
+  category3Id,
+}: {
+  page: number;
+  limit: number;
+  category3Id: number;
+}) => {
+  return request.get<any, GetSpuListResponse>(
     Api.getSpuList + `/${page}/${limit}?category3Id=${category3Id}`
   );
 };

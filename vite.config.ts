@@ -14,8 +14,8 @@ export default defineConfig((mode: ConfigEnv) => {
       // open: true,
       proxy: {
         "/app-dev": {
-          target: "http://gmall-h5-api.atguigu.cn",
-          // target: "http://sph-h5-api.atguigu.cn",
+          // target: "http://gmall-h5-api.atguigu.cn",
+          target: "http://sph-h5-api.atguigu.cn",
           changeOrigin: true,
           // 路径是否需要重写，看接口文档（接口需要前缀，就不重写）（接口不需要前缀，就要重写）
           rewrite: (path) => path.replace(/^\/app-dev/, ""),

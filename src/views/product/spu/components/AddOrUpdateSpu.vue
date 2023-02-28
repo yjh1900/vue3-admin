@@ -37,6 +37,7 @@
             :on-remove="handleRemove"
             :on-exceed="handleUploadExceed"
             :on-success="handleUploadSuccess"
+            :before-upload="beforeImageUpload"
             :limit="10"
           >
             <el-icon><Plus /></el-icon> </el-upload
@@ -86,12 +87,12 @@
                   >{{ item.saleAttrValueName }}</el-tag
                 > -->
                 <el-tag
-                  v-for="tag in scope.row.spuSaleValueAttrList"
+                  v-for="tag in scope.row.spuSaleAttrValueList"
                   :key="tag.id"
                   class="mx-1 mr-10"
                   closable
                   :disable-transitions="false"
-                  @close="handleClose(tag)"
+                  @close="handleClose(tag, scope.row)"
                 >
                   {{ tag.saleAttrValueName }}
                 </el-tag>
@@ -161,17 +162,22 @@ import { getAllTrademarkListApi } from "@/api/product/trademark";
 import { getBaseSaleAttrListApi, saveSpuInfoApi } from "@/api/product/spu";
 import { ElMessage, ElInput } from "element-plus";
 import { useCategoryStore } from "@/stores/category";
+import { beforeLOGOUpload as beforeImageUpload } from "@/utils/tools";
+import type {
+  SpuList,
+  SpuItem,
+  SpuSaleAttrList,
+} from "@/api/product/model/spuModel";
 const categoryStore = useCategoryStore();
 
 const inputValue = ref("");
-const dynamicTags = ref(["Tag 1", "Tag 2", "Tag 3"]);
-const inputVisible = ref(false);
 const InputRef = ref<InstanceType<typeof ElInput>>();
 
-const handleClose = (tag: string) => {
-  dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1);
+const handleClose = (tag: string, row: any) => {
+  row.spuSaleAttrValueList.splice(row.spuSaleAttrValueList.indexOf(tag), 1);
 };
 
+// 属性值列表修改的输入框聚焦与显示
 const showInput = (row) => {
   row.inputVisible = true;
   nextTick(() => {
@@ -181,10 +187,14 @@ const showInput = (row) => {
 
 // 添加属性值列表
 const handleInputConfirm = (row) => {
-  // 若列表没有值或undefined，初始化列表
-  if (!row.spuSaleValueAttrList) row.spuSaleValueAttrList = [];
   if (inputValue.value) {
-    row.spuSaleValueAttrList.push({ saleAttrValueName: inputValue.value });
+    console.log(row, "row");
+    // 根据接口数据，向属性值tags列表中添加数据对象
+    row.spuSaleAttrValueList.push({
+      saleAttrValueName: inputValue.value,
+      baseSaleAttrId: row.baseSaleAttrId,
+      saleAttrName: row.saleAttrName,
+    });
   }
   row.inputVisible = false;
   inputValue.value = "";
@@ -193,10 +203,9 @@ const handleInputConfirm = (row) => {
 const BASE_URL = import.meta.env.VITE_API_URL;
 const trademarkList = ref([]);
 const saleAttrList = ref([]);
-// 销售属性
+
+// 销售属性，字符串拼接了名字和id
 const saleAttr = ref();
-// 销售属性表格数据
-const saleAttrListTable = ref([]);
 
 onMounted(async () => {
   try {
@@ -225,11 +234,12 @@ const addSaleAttr = () => {
   );
   // 将删除的属性添加到表格中
   ruleForm.spuSaleAttrList.push({
-    baseSaleAttrId: parseInt(saleAttr.value.split(":")[1]),
+    baseSaleAttrId: +saleAttr.value.split(":")[1], // '+'转number类型
     saleAttrName: saleAttr.value.split(":")[0],
+    spuSaleAttrValueList: [],
+    inputVisible: false,
   });
   resetSaleAttr();
-  console.log(saleAttrList, ruleForm.spuSaleAttrList);
 };
 
 // 删除销售属性
@@ -247,12 +257,12 @@ const deleteHandle = (val) => {
   resetSaleAttr();
 };
 
-const fileList = ref<UploadUserFile[]>([
-  {
-    name: "food.jpeg",
-    url: "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100",
-  },
-]);
+// const fileList = ref<UploadUserFile[]>([
+//   {
+//     name: "food.jpeg",
+//     url: "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100",
+//   },
+// ]);
 
 const dialogImageUrl = ref("");
 const dialogVisible = ref(false);
@@ -263,6 +273,7 @@ const handleRemove: UploadProps["onRemove"] = (uploadFile, uploadFiles) => {
 
 const handlePictureCardPreview: UploadProps["onPreview"] = (uploadFile) => {
   dialogImageUrl.value = uploadFile.url!;
+
   dialogVisible.value = true;
 };
 const handleUploadExceed: UploadProps["onExceed"] = () => {
@@ -271,6 +282,7 @@ const handleUploadExceed: UploadProps["onExceed"] = () => {
 
 // 上传成功，清空表单校验结果
 const handleUploadSuccess: UploadProps["onSuccess"] = (uploadFile) => {
+  console.log(ruleForm.spuImageList, "ruleFormRef.spuImageList");
   ruleFormRef.value.clearValidate(["spuImageList"]);
 };
 
@@ -279,15 +291,18 @@ const isComponentShow = inject("isComponentShow");
 const loading = ref(false);
 
 const ruleFormRef = ref<FormInstance>();
-const ruleForm = reactive({
-  category3Id: categoryStore.category3Id,
+
+// 定义表单数据
+const ruleForm = reactive<SpuItem>({
+  category3Id: categoryStore.category3Id as number,
   spuName: "",
-  tmId: "",
+  tmId: undefined,
   description: "",
   spuImageList: [],
-  spuSaleAttrList: [],
+  spuSaleAttrList: <SpuSaleAttrList>[],
 });
 
+// 表单校验规则
 const rules = reactive<FormRules>({
   //   name: [
   //     { required: true, message: "Please input Activity name", trigger: "blur" },
@@ -347,8 +362,20 @@ const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      console.log("submit!");
-      await saveSpuInfoApi(ruleForm);
+      const { spuName, tmId, description, spuImageList, spuSaleAttrList } =
+        ruleForm;
+      const data = {
+        category3Id: categoryStore.category3Id,
+        spuName,
+        tmId,
+        description,
+        spuImageList: spuImageList.map((item) => {
+          return { imgName: item.name, imgUrl: item.response.data };
+        }),
+        spuSaleAttrList,
+      };
+      console.log(data.spuImageList, "imglist");
+      await saveSpuInfoApi(data);
       isComponentShow.value = 0;
     } else {
       console.log("error submit!", fields);

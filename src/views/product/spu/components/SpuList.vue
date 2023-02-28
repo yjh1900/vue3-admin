@@ -81,10 +81,12 @@ export default {
 
 <script lang="ts" setup>
 import { watch, ref, inject } from "vue";
+import type { Ref } from "vue";
 import { inputEmits, type FormInstance, type FormRules } from "element-plus";
 import { useCategoryStore } from "@/stores/category";
 import { Plus, Edit, Delete, InfoFilled } from "@element-plus/icons-vue";
 import { getSpuListApi } from "@/api/product/spu";
+import type { SpuList } from "@/api/product/model/spuModel";
 
 const total = ref(0); // 数据总条数
 const currentPage = ref(1); // 当前界面索引
@@ -105,15 +107,14 @@ const handleCurrentChange = (val: number) => {
 };
 
 // 依赖注入
-let spuList = inject("spuList");
-const isComponentShow = inject("isComponentShow");
-const isSpuListShow = inject("isSpuListShow");
+const spuList = inject("spuList") as Ref<SpuList>;
+const isComponentShow = inject("isComponentShow") as Ref<number>;
+const isSpuListShow = inject("isSpuListShow") as Ref<boolean>;
 
 const addSkuHandle = () => {};
 
 const addHandle = () => {
   isComponentShow.value = 1;
-  console.log(isComponentShow);
   isSpuListShow.value = false;
 };
 const editHandle = (row) => {};
@@ -128,7 +129,7 @@ const getSpuList = async () => {
   const res = await getSpuListApi({
     limit: pageSize.value,
     page: currentPage.value,
-    category3Id: categoryStore.category3Id,
+    category3Id: categoryStore.category3Id as number,
   });
   //   spuList.value = a;
   spuList.value = res.records;
