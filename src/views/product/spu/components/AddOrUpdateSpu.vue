@@ -54,7 +54,11 @@
               :value="`${item.name}:${item.id}`"
             />
           </el-select>
-          <el-button type="primary" :icon="Plus" @click="addSaleAttr"
+          <el-button
+            type="primary"
+            :icon="Plus"
+            @click="addSaleAttr"
+            :disabled="!saleAttr"
             >添加销售属性</el-button
           >
 
@@ -74,13 +78,40 @@
             <el-table-column label="属性值名称列表">
               <!-- v-for="item in ruleForm.spuSaleAttrList.spuSaleAttrValueList" -->
               <template #default="scope">
-                <el-tag
+                <!-- <el-tag
                   class="mr-10"
                   type="success"
                   :key="item.baseSaleAttrId"
                   v-for="item in saleAttrListTable"
                   >{{ item.saleAttrValueName }}</el-tag
+                > -->
+                <el-tag
+                  v-for="tag in scope.row.spuSaleValueAttrList"
+                  :key="tag.id"
+                  class="mx-1 mr-10"
+                  closable
+                  :disable-transitions="false"
+                  @close="handleClose(tag)"
                 >
+                  {{ tag.saleAttrValueName }}
+                </el-tag>
+                <el-input
+                  v-if="scope.row.inputVisible"
+                  ref="InputRef"
+                  v-model="inputValue"
+                  class="ml-1 w-20"
+                  size="small"
+                  @keyup.enter="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                />
+                <el-button
+                  v-else
+                  class="button-new-tag ml-1"
+                  size="small"
+                  @click="showInput(scope.row)"
+                >
+                  + 添加
+                </el-button>
               </template></el-table-column
             >
             <el-table-column label="操作" width="150">
@@ -118,7 +149,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { reactive, ref, inject, onMounted } from "vue";
+import { reactive, nextTick, ref, inject, onMounted } from "vue";
 import type {
   FormInstance,
   FormRules,
@@ -128,7 +159,36 @@ import type {
 import { Plus, Delete } from "@element-plus/icons-vue";
 import { getAllTrademarkListApi } from "@/api/product/trademark";
 import { getBaseSaleAttrListApi, saveSpuInfoApi } from "@/api/product/spu";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElInput } from "element-plus";
+import { useCategoryStore } from "@/stores/category";
+const categoryStore = useCategoryStore();
+
+const inputValue = ref("");
+const dynamicTags = ref(["Tag 1", "Tag 2", "Tag 3"]);
+const inputVisible = ref(false);
+const InputRef = ref<InstanceType<typeof ElInput>>();
+
+const handleClose = (tag: string) => {
+  dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1);
+};
+
+const showInput = (row) => {
+  row.inputVisible = true;
+  nextTick(() => {
+    InputRef.value!.input!.focus();
+  });
+};
+
+// 添加属性值列表
+const handleInputConfirm = (row) => {
+  // 若列表没有值或undefined，初始化列表
+  if (!row.spuSaleValueAttrList) row.spuSaleValueAttrList = [];
+  if (inputValue.value) {
+    row.spuSaleValueAttrList.push({ saleAttrValueName: inputValue.value });
+  }
+  row.inputVisible = false;
+  inputValue.value = "";
+};
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 const trademarkList = ref([]);
@@ -145,11 +205,17 @@ onMounted(async () => {
     );
     trademarkList.value = responseTrademarkList;
     saleAttrList.value = responseBaseSaleAttrList;
-    // console.log(responseTrademarkList, responseBaseSaleAttrList, 1);
   } catch (err) {
     ElMessage.error("获取属性失败了...");
   }
 });
+
+const resetSaleAttr = () => {
+  // 重置销售列表的当前选中项，若列表还有值那就选中第一项
+  saleAttr.value = saleAttrList.value.length
+    ? `${saleAttrList.value[0].name}:${saleAttrList.value[0].id}`
+    : undefined;
+};
 
 // 修改销售属性选项
 const addSaleAttr = () => {
@@ -157,26 +223,28 @@ const addSaleAttr = () => {
   saleAttrList.value = saleAttrList.value.filter(
     (item) => item.id !== parseInt(saleAttr.value.split(":")[1])
   );
+  // 将删除的属性添加到表格中
   ruleForm.spuSaleAttrList.push({
     baseSaleAttrId: parseInt(saleAttr.value.split(":")[1]),
     saleAttrName: saleAttr.value.split(":")[0],
   });
-  saleAttr.value = undefined;
+  resetSaleAttr();
   console.log(saleAttrList, ruleForm.spuSaleAttrList);
 };
 
+// 删除销售属性
 const deleteHandle = (val) => {
   console.log(val);
   //  删除销售属性列表数据
-  ruleForm.spuSaleAttrList = ruleForm.spuSaleAttrList.filter((item) => {
-    item.baseSaleAttrId !== val.baseSaleAttrId;
-  });
-  //  重新添加到select-中
-  console.log(saleAttrList.value);
+  ruleForm.spuSaleAttrList = ruleForm.spuSaleAttrList.filter(
+    (item) => item.baseSaleAttrId !== val.baseSaleAttrId
+  );
+  //  重新添加到select中
   saleAttrList.value.push({
     id: val.baseSaleAttrId,
     name: val.saleAttrName,
   });
+  resetSaleAttr();
 };
 
 const fileList = ref<UploadUserFile[]>([
@@ -212,12 +280,12 @@ const loading = ref(false);
 
 const ruleFormRef = ref<FormInstance>();
 const ruleForm = reactive({
+  category3Id: categoryStore.category3Id,
   spuName: "",
   tmId: "",
   description: "",
   spuImageList: [],
   spuSaleAttrList: [],
-  id: undefined,
 });
 
 const rules = reactive<FormRules>({
@@ -281,6 +349,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     if (valid) {
       console.log("submit!");
       await saveSpuInfoApi(ruleForm);
+      isComponentShow.value = 0;
     } else {
       console.log("error submit!", fields);
     }
