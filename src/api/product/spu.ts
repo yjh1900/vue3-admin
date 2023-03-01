@@ -8,6 +8,7 @@ enum Api {
   getSpuInfo = "/admin/product/getSpuInfo",
   getSpuImageList = "/admin/product/spuImageList",
   getSpuSaleAttrList = "/admin/product/spuSaleAttrList",
+  postSpuInfo = "/admin/product/updateSpuInfo",
 }
 // getSpuList:
 
@@ -49,4 +50,8 @@ export const getSpuImageListApi = (spuId: number) => {
 
 export const getSpuSaleAttrListApi = (spuId: number) => {
   return request.get(Api.getSpuSaleAttrList + `/${spuId}`);
+};
+
+export const postSpuInfoApi = (data: any) => {
+  return request.post(Api.postSpuInfo, data);
 };

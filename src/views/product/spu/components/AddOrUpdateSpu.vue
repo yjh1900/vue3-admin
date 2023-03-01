@@ -158,6 +158,7 @@ import {
   getSpuInfoApi,
   getSpuImageListApi,
   getSpuSaleAttrListApi,
+  postSpuInfoApi,
 } from "@/api/product/spu";
 import { ElMessage, ElInput } from "element-plus";
 import { useCategoryStore } from "@/stores/category";
@@ -246,6 +247,9 @@ onMounted(async () => {
     return {
       name: item.imgName,
       url: item.imgUrl,
+      response: {
+        data: item.imgUrl,
+      },
     };
   });
   console.log(ruleForm.spuImageList);
@@ -390,6 +394,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(async (valid, fields) => {
     if (valid) {
+      const id = curSpuItem.value.id;
       const { spuName, tmId, description, spuImageList, spuSaleAttrList } =
         ruleForm;
       const data = {
@@ -403,7 +408,12 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         spuSaleAttrList,
       };
       console.log(data.spuImageList, "imglist");
-      await saveSpuInfoApi(data);
+
+      if (id) {
+        await postSpuInfoApi({ ...data, id });
+      } else {
+        await saveSpuInfoApi(data);
+      }
       isComponentShow.value = 0;
     } else {
       console.log("error submit!", fields);
