@@ -86,7 +86,7 @@ import { inputEmits, type FormInstance, type FormRules } from "element-plus";
 import { useCategoryStore } from "@/stores/category";
 import { Plus, Edit, Delete, InfoFilled } from "@element-plus/icons-vue";
 import { getSpuListApi } from "@/api/product/spu";
-import type { SpuList } from "@/api/product/model/spuModel";
+import type { SpuList, SpuItem } from "@/api/product/model/spuModel";
 
 const total = ref(0); // 数据总条数
 const currentPage = ref(1); // 当前界面索引
@@ -110,6 +110,7 @@ const handleCurrentChange = (val: number) => {
 const spuList = inject("spuList") as Ref<SpuList>;
 const isComponentShow = inject("isComponentShow") as Ref<number>;
 const isSpuListShow = inject("isSpuListShow") as Ref<boolean>;
+const curSpuItem = inject("curSpuItem") as Ref<SpuItem>;
 
 const addSkuHandle = () => {};
 
@@ -117,7 +118,10 @@ const addHandle = () => {
   isComponentShow.value = 1;
   isSpuListShow.value = false;
 };
-const editHandle = (row) => {};
+const editHandle = (row: SpuItem) => {
+  curSpuItem.value = row;
+  isComponentShow.value = 1;
+};
 const deleteHandle = (row) => {};
 
 const curList = ref([]);

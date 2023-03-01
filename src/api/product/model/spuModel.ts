@@ -22,12 +22,13 @@ export interface SpuSaleAttrList {
 }
 
 export interface SpuItem {
-  category3Id: number;
-  description: string;
-  id: number;
+  category3Id?: number;
+  description?: string;
+  spuName?: string;
+  id?: number;
   tmId?: number;
-  spuImageList: SpuImageList;
-  spuSaleAttrList: SpuSaleAttrList;
+  spuImageList?: SpuImageList;
+  spuSaleAttrList?: SpuSaleAttrList;
 }
 
 export type SpuList = SpuItem[];

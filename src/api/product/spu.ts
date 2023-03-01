@@ -5,6 +5,9 @@ enum Api {
   getSpuList = "/admin/product",
   getBaseSaleAttrList = "/admin/product/baseSaleAttrList",
   saveSpuInfo = "/admin/product/saveSpuInfo",
+  getSpuInfo = "/admin/product/getSpuInfo",
+  getSpuImageList = "/admin/product/spuImageList",
+  getSpuSaleAttrList = "/admin/product/spuSaleAttrList",
 }
 // getSpuList:
 
@@ -34,4 +37,16 @@ export const getBaseSaleAttrListApi = () => {
 
 export const saveSpuInfoApi = (data: any) => {
   return request.post(Api.saveSpuInfo, data);
+};
+
+export const getSpuInfoApi = (spuId: number) => {
+  return request.get(Api.getSpuInfo + `/${spuId}`);
+};
+
+export const getSpuImageListApi = (spuId: number) => {
+  return request.get(Api.getSpuImageList + `/${spuId}`);
+};
+
+export const getSpuSaleAttrListApi = (spuId: number) => {
+  return request.get(Api.getSpuSaleAttrList + `/${spuId}`);
 };

@@ -28,7 +28,7 @@
           <el-input v-model="ruleForm.description" type="textarea" />
         </el-form-item>
 
-        <el-form-item label="SPU图片" prop="count">
+        <el-form-item label="SPU图片" prop="spuImageList">
           <el-upload
             v-model:file-list="ruleForm.spuImageList"
             :action="`${BASE_URL}/admin/product/fileUpload`"
@@ -49,7 +49,7 @@
         <el-form-item label="销售属性">
           <el-select placeholder="请选择" class="mr-10" v-model="saleAttr">
             <el-option
-              v-for="item in saleAttrList"
+              v-for="item in filterSaleAttrList"
               :key="item.id"
               :label="item.name"
               :value="`${item.name}:${item.id}`"
@@ -77,15 +77,7 @@
             />
             <el-table-column prop="saleAttrName" label="属性名" width="150" />
             <el-table-column label="属性值名称列表">
-              <!-- v-for="item in ruleForm.spuSaleAttrList.spuSaleAttrValueList" -->
               <template #default="scope">
-                <!-- <el-tag
-                  class="mr-10"
-                  type="success"
-                  :key="item.baseSaleAttrId"
-                  v-for="item in saleAttrListTable"
-                  >{{ item.saleAttrValueName }}</el-tag
-                > -->
                 <el-tag
                   v-for="tag in scope.row.spuSaleAttrValueList"
                   :key="tag.id"
@@ -150,7 +142,8 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import { reactive, nextTick, ref, inject, onMounted } from "vue";
+import type { Ref } from "vue";
+import { reactive, nextTick, ref, inject, onMounted, computed } from "vue";
 import type {
   FormInstance,
   FormRules,
@@ -159,7 +152,13 @@ import type {
 } from "element-plus";
 import { Plus, Delete } from "@element-plus/icons-vue";
 import { getAllTrademarkListApi } from "@/api/product/trademark";
-import { getBaseSaleAttrListApi, saveSpuInfoApi } from "@/api/product/spu";
+import {
+  getBaseSaleAttrListApi,
+  saveSpuInfoApi,
+  getSpuInfoApi,
+  getSpuImageListApi,
+  getSpuSaleAttrListApi,
+} from "@/api/product/spu";
 import { ElMessage, ElInput } from "element-plus";
 import { useCategoryStore } from "@/stores/category";
 import { beforeLOGOUpload as beforeImageUpload } from "@/utils/tools";
@@ -168,14 +167,34 @@ import type {
   SpuItem,
   SpuSaleAttrList,
 } from "@/api/product/model/spuModel";
+
+// 依赖注入
+const isComponentShow = inject("isComponentShow") as Ref<number>;
+const curSpuItem = inject("curSpuItem") as Ref<SpuItem>;
+
 const categoryStore = useCategoryStore();
 
 const inputValue = ref("");
 const InputRef = ref<InstanceType<typeof ElInput>>();
+const BASE_URL = import.meta.env.VITE_API_URL;
+
+const trademarkList = ref([]);
+const saleAttrList = ref([]);
+const dialogImageUrl = ref("");
+const dialogVisible = ref(false);
 
 const handleClose = (tag: string, row: any) => {
   row.spuSaleAttrValueList.splice(row.spuSaleAttrValueList.indexOf(tag), 1);
 };
+
+const filterSaleAttrList = computed(() => {
+  // 筛选销售属性列表，遍历每一条，看看在当前属性有没有加入表格中
+  return saleAttrList.value.filter((item) => {
+    return !ruleForm.spuSaleAttrList?.some(
+      (spu) => spu.baseSaleAttrId === item.id
+    );
+  });
+});
 
 // 属性值列表修改的输入框聚焦与显示
 const showInput = (row) => {
@@ -200,10 +219,6 @@ const handleInputConfirm = (row) => {
   inputValue.value = "";
 };
 
-const BASE_URL = import.meta.env.VITE_API_URL;
-const trademarkList = ref([]);
-const saleAttrList = ref([]);
-
 // 销售属性，字符串拼接了名字和id
 const saleAttr = ref();
 
@@ -218,20 +233,39 @@ onMounted(async () => {
     ElMessage.error("获取属性失败了...");
   }
 });
+// 获取更新的页面数据
+onMounted(async () => {
+  if (!curSpuItem.value) return;
+
+  const imgList = await getSpuImageListApi(curSpuItem.value.id as number);
+  const attrValueList = await getSpuSaleAttrListApi(
+    curSpuItem.value.id as number
+  );
+
+  ruleForm.spuImageList = imgList.map((item) => {
+    return {
+      name: item.imgName,
+      url: item.imgUrl,
+    };
+  });
+  console.log(ruleForm.spuImageList);
+
+  ruleForm.spuSaleAttrList = attrValueList;
+});
 
 const resetSaleAttr = () => {
   // 重置销售列表的当前选中项，若列表还有值那就选中第一项
-  saleAttr.value = saleAttrList.value.length
-    ? `${saleAttrList.value[0].name}:${saleAttrList.value[0].id}`
+  saleAttr.value = filterSaleAttrList.value.length
+    ? `${filterSaleAttrList.value[0].name}:${filterSaleAttrList.value[0].id}`
     : undefined;
 };
 
 // 修改销售属性选项
 const addSaleAttr = () => {
   // 将选中的销售属性删除
-  saleAttrList.value = saleAttrList.value.filter(
-    (item) => item.id !== parseInt(saleAttr.value.split(":")[1])
-  );
+  //   saleAttrList.value = saleAttrList.value.filter(
+  //     (item) => item.id !== parseInt(saleAttr.value.split(":")[1])
+  //   );
   // 将删除的属性添加到表格中
   ruleForm.spuSaleAttrList.push({
     baseSaleAttrId: +saleAttr.value.split(":")[1], // '+'转number类型
@@ -244,16 +278,15 @@ const addSaleAttr = () => {
 
 // 删除销售属性
 const deleteHandle = (val) => {
-  console.log(val);
   //  删除销售属性列表数据
   ruleForm.spuSaleAttrList = ruleForm.spuSaleAttrList.filter(
     (item) => item.baseSaleAttrId !== val.baseSaleAttrId
   );
   //  重新添加到select中
-  saleAttrList.value.push({
-    id: val.baseSaleAttrId,
-    name: val.saleAttrName,
-  });
+  //   saleAttrList.value.push({
+  //     id: val.baseSaleAttrId,
+  //     name: val.saleAttrName,
+  //   });
   resetSaleAttr();
 };
 
@@ -263,9 +296,6 @@ const deleteHandle = (val) => {
 //     url: "https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100",
 //   },
 // ]);
-
-const dialogImageUrl = ref("");
-const dialogVisible = ref(false);
 
 const handleRemove: UploadProps["onRemove"] = (uploadFile, uploadFiles) => {
   console.log(uploadFile, uploadFiles);
@@ -286,8 +316,6 @@ const handleUploadSuccess: UploadProps["onSuccess"] = (uploadFile) => {
   ruleFormRef.value.clearValidate(["spuImageList"]);
 };
 
-const isComponentShow = inject("isComponentShow");
-
 const loading = ref(false);
 
 const ruleFormRef = ref<FormInstance>();
@@ -295,9 +323,9 @@ const ruleFormRef = ref<FormInstance>();
 // 定义表单数据
 const ruleForm = reactive<SpuItem>({
   category3Id: categoryStore.category3Id as number,
-  spuName: "",
-  tmId: undefined,
-  description: "",
+  spuName: curSpuItem.value?.spuName,
+  tmId: curSpuItem.value?.tmId,
+  description: curSpuItem.value?.description,
   spuImageList: [],
   spuSaleAttrList: <SpuSaleAttrList>[],
 });
@@ -386,8 +414,15 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 const resetForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.resetFields();
+  curSpuItem.value = null;
   isComponentShow.value = 0;
 };
+
+onMounted(() => {
+  nextTick(() => {
+    console.log(curSpuItem.value);
+  });
+});
 </script>
 
 <style scoped></style>

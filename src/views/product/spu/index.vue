@@ -18,12 +18,16 @@ import CategorySelector from "@/components/CategorySelector/index.vue";
 import AddSku from "./components/AddSku.vue";
 import AddOrUpdateSpu from "./components/AddOrUpdateSpu.vue";
 import SpuList from "./components/SpuList.vue";
-import type { SpuList as SpuListType } from "@/api/product/model/spuModel";
+import type {
+  SpuList as SpuListType,
+  SpuItem,
+} from "@/api/product/model/spuModel";
 
 import { ref, provide } from "vue";
 const isSpuListShow = ref(true);
-const isComponentShow = ref<number>(1);
+const isComponentShow = ref<number>(0);
 const spuList = ref<SpuListType>([]);
+const curSpuItem = ref<SpuItem>();
 enum curComponents {
   SpuList,
   AddOrUpdateSpu,
@@ -34,6 +38,7 @@ enum curComponents {
 provide("spuList", spuList);
 provide("isSpuListShow", isSpuListShow);
 provide("isComponentShow", isComponentShow);
+provide("curSpuItem", curSpuItem);
 </script>
 
 <style scoped></style>
