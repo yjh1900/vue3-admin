@@ -288,13 +288,13 @@ const cancel = (formEl: FormInstance | undefined) => {
 };
 
 const submit = async () => {
-  //   await skuFormRef.value.validate();
+  await skuFormRef.value.validate();
   await addSkuApi({
     ...skuFormData,
     category3Id: categoryStore.category3Id as number,
     spuId: curSpuItem.value.id as number,
     // 组件收集到的数据 [undefined, string]
-    // 发送请求需要的数据是对象，所以先将undefined过滤掉，在格式化成对象
+    // 发送请求需要的数据是对象，所以先将undefined过滤掉，再格式化成对象
     skuAttrValueList: skuFormData.skuAttrValueList
       .filter(Boolean)
       .map((attr) => {

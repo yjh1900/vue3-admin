@@ -108,14 +108,7 @@ export default {
 </script>
 
 <script lang="ts" setup>
-import {
-  defineEmits,
-  reactive,
-  ref,
-  nextTick,
-  defineProps,
-  onMounted,
-} from "vue";
+import { reactive, ref, nextTick, onMounted } from "vue";
 // input标签的实例对象
 import type { InputInstance } from "element-plus";
 import { Delete, Plus } from "@element-plus/icons-vue";
