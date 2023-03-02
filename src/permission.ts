@@ -14,6 +14,8 @@ const whiteList = ["/login"];
 
 // 路由加载前
 router.beforeEach(async (to, from, next) => {
+  console.log(to);
+
   // 在显示进度条
   NProgress.start();
 

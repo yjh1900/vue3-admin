@@ -9,11 +9,11 @@
         class="demo-ruleForm"
         status-icon
       >
-        <el-form-item label="SPU名称" prop="name">
+        <el-form-item label="SPU名称" prop="spuName">
           <el-input v-model="ruleForm.spuName" placeholder="请输入SPU名称" />
         </el-form-item>
 
-        <el-form-item label="品牌" prop="region">
+        <el-form-item label="品牌" prop="tmId">
           <el-select v-model="ruleForm.tmId" placeholder="请选择">
             <el-option
               v-for="item in trademarkList"
@@ -24,7 +24,7 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="SPU描述" prop="desc">
+        <el-form-item label="SPU描述" prop="description">
           <el-input v-model="ruleForm.description" type="textarea" />
         </el-form-item>
 
@@ -46,7 +46,7 @@
           </el-dialog>
         </el-form-item>
 
-        <el-form-item label="销售属性">
+        <el-form-item label="销售属性" prop="spuSaleAttrList">
           <el-select placeholder="请选择" class="mr-10" v-model="saleAttr">
             <el-option
               v-for="item in filterSaleAttrList"
@@ -144,12 +144,7 @@ export default {
 <script lang="ts" setup>
 import type { Ref } from "vue";
 import { reactive, nextTick, ref, inject, onMounted, computed } from "vue";
-import type {
-  FormInstance,
-  FormRules,
-  UploadProps,
-  UploadUserFile,
-} from "element-plus";
+import type { FormInstance, FormRules, UploadProps } from "element-plus";
 import { Plus, Delete } from "@element-plus/icons-vue";
 import { getAllTrademarkListApi } from "@/api/product/trademark";
 import {
@@ -168,6 +163,7 @@ import type {
   SpuItem,
   SpuSaleAttrList,
 } from "@/api/product/model/spuModel";
+import type { TrademarkList } from "@/api/product/model/trademarkModel";
 
 // 依赖注入
 const isComponentShow = inject("isComponentShow") as Ref<number>;
@@ -179,11 +175,81 @@ const inputValue = ref("");
 const InputRef = ref<InstanceType<typeof ElInput>>();
 const BASE_URL = import.meta.env.VITE_API_URL;
 
-const trademarkList = ref([]);
+const trademarkList = ref<TrademarkList>([]);
 const saleAttrList = ref([]);
 const dialogImageUrl = ref("");
 const dialogVisible = ref(false);
 
+// 销售属性，字符串拼接了名字和id
+const saleAttr = ref();
+
+// 自定义校验规则
+const spuSaleAttrListValidator = (
+  rule: any,
+  value: SpuSaleAttrList,
+  callback: any
+) => {
+  /*
+    rule 规则信息对象
+    value 校验数据的值
+    callback 是一个函数，必须要调用
+      callback(); 校验通过
+      callback(new Error('错误信息')); 校验失败
+  */
+  //  条件判断不同情况
+  if (!value.length) {
+    callback(new Error("请至少添加一个销售属性"));
+    return;
+  }
+  if (value.some((item) => !item.spuSaleAttrValueList.length)) {
+    callback(new Error("每个属性至少添加一个属性值"));
+    return;
+  }
+  // 一定要调用，校验通过
+  callback();
+};
+// 表单校验规则
+const rules = reactive<FormRules>({
+  spuName: [
+    { required: true, message: "请输入spu名称", trigger: "blur" },
+    { min: 2, max: 10, message: "长度在2-10之间", trigger: "blur" },
+  ],
+  tmId: [
+    {
+      required: true,
+      message: "请选择一个品牌",
+      trigger: "change",
+    },
+  ],
+  description: [
+    {
+      required: true,
+      message: "请输入spu描述",
+      trigger: "blur",
+    },
+  ],
+  spuImageList: [
+    {
+      required: true,
+      message: "请上传SPU图片",
+    },
+  ],
+  // prop的值和rules的属性名要一一对应
+  spuSaleAttrList: [
+    {
+      required: true,
+      validator: spuSaleAttrListValidator,
+    },
+  ],
+});
+const resetForm = (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  formEl.resetFields();
+  curSpuItem.value = {};
+  isComponentShow.value = 0;
+};
+
+// 删除添加的属性值tag
 const handleClose = (tag: string, row: any) => {
   row.spuSaleAttrValueList.splice(row.spuSaleAttrValueList.indexOf(tag), 1);
 };
@@ -220,9 +286,6 @@ const handleInputConfirm = (row) => {
   inputValue.value = "";
 };
 
-// 销售属性，字符串拼接了名字和id
-const saleAttr = ref();
-
 onMounted(async () => {
   try {
     const [responseTrademarkList, responseBaseSaleAttrList] = await Promise.all(
@@ -236,7 +299,7 @@ onMounted(async () => {
 });
 // 获取更新的页面数据
 onMounted(async () => {
-  if (!curSpuItem.value) return;
+  if (!Object.keys(curSpuItem.value).length) return;
 
   const imgList = await getSpuImageListApi(curSpuItem.value.id as number);
   const attrValueList = await getSpuSaleAttrListApi(
@@ -334,62 +397,6 @@ const ruleForm = reactive<SpuItem>({
   spuSaleAttrList: <SpuSaleAttrList>[],
 });
 
-// 表单校验规则
-const rules = reactive<FormRules>({
-  //   name: [
-  //     { required: true, message: "Please input Activity name", trigger: "blur" },
-  //     { min: 3, max: 5, message: "Length should be 3 to 5", trigger: "blur" },
-  //   ],
-  //   region: [
-  //     {
-  //       required: true,
-  //       message: "Please select Activity zone",
-  //       trigger: "change",
-  //     },
-  //   ],
-  //   count: [
-  //     {
-  //       required: true,
-  //       message: "Please select Activity count",
-  //       trigger: "change",
-  //     },
-  //   ],
-  //   date1: [
-  //     {
-  //       type: "date",
-  //       required: true,
-  //       message: "Please pick a date",
-  //       trigger: "change",
-  //     },
-  //   ],
-  //   date2: [
-  //     {
-  //       type: "date",
-  //       required: true,
-  //       message: "Please pick a time",
-  //       trigger: "change",
-  //     },
-  //   ],
-  //   type: [
-  //     {
-  //       type: "array",
-  //       required: true,
-  //       message: "Please select at least one activity type",
-  //       trigger: "change",
-  //     },
-  //   ],
-  //   resource: [
-  //     {
-  //       required: true,
-  //       message: "Please select activity resource",
-  //       trigger: "change",
-  //     },
-  //   ],
-  //   desc: [
-  //     { required: true, message: "Please input activity form", trigger: "blur" },
-  //   ],
-});
-
 const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(async (valid, fields) => {
@@ -420,19 +427,6 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     }
   });
 };
-
-const resetForm = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.resetFields();
-  curSpuItem.value = null;
-  isComponentShow.value = 0;
-};
-
-onMounted(() => {
-  nextTick(() => {
-    console.log(curSpuItem.value);
-  });
-});
 </script>
 
 <style scoped></style>

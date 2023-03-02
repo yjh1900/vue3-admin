@@ -44,14 +44,25 @@
                 <el-button type="info" :icon="InfoFilled" size="small" />
               </template>
             </el-popconfirm>
+
+            <!-- 气泡确认框和tooltip一起使用的方法，在tooltip外面再套一层div -->
             <el-popconfirm
               confirm-button-text="确认"
               cancel-button-text="取消"
-              :title="`确认删除${row.attrName}吗`"
+              :title="`确认删除${row.spuName}吗`"
               @confirm="deleteHandle(row)"
             >
               <template #reference>
-                <el-button type="danger" :icon="Delete" size="small" />
+                <div style="display: inline; margin-left: 10px">
+                  <el-tooltip
+                    class="box-item"
+                    effect="dark"
+                    content="删除"
+                    placement="bottom-start"
+                  >
+                    <el-button type="danger" :icon="Delete" size="small" />
+                  </el-tooltip>
+                </div>
               </template>
             </el-popconfirm>
           </template>

@@ -42,3 +42,20 @@ export interface GetSpuListResponse {
   pages: number;
   hitCount: boolean;
 }
+
+export interface SaleAttrItem {
+  id: number;
+  name: string;
+}
+
+export type SaleAttrList = SaleAttrItem[];
+
+export interface GetSaleAttrListResponse {
+  records: SpuList;
+  total: number;
+  size: number;
+  current: number;
+  searchCount: boolean;
+  pages: number;
+  hitCount: boolean;
+}

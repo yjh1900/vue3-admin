@@ -1,5 +1,8 @@
 import request from "@/utils/request";
-import type { GetSpuListResponse } from "./model/spuModel";
+import type {
+  GetSpuListResponse,
+  GetSaleAttrListResponse,
+} from "./model/spuModel";
 
 enum Api {
   getSpuList = "/admin/product",
@@ -33,7 +36,7 @@ export const getSpuListApi = ({
 };
 
 export const getBaseSaleAttrListApi = () => {
-  return request.get(Api.getBaseSaleAttrList);
+  return request.get<any, GetSaleAttrListResponse>(Api.getBaseSaleAttrList);
 };
 
 export const saveSpuInfoApi = (data: any) => {
