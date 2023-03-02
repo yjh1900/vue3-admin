@@ -32,7 +32,7 @@
 
 export interface AttrItem {
   id?: number;
-  valueName: string;
+  valueName?: string;
   attrId?: number;
   // 添加时绑定的是否为编辑状态
   isEdit?: boolean;

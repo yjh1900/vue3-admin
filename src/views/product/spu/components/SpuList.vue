@@ -17,7 +17,7 @@
             <el-button
               type="primary"
               :icon="Plus"
-              @click="addSkuHandle()"
+              @click="addSkuHandle(row)"
               size="small"
             />
             <el-tooltip
@@ -123,7 +123,11 @@ const isComponentShow = inject("isComponentShow") as Ref<number>;
 const isSpuListShow = inject("isSpuListShow") as Ref<boolean>;
 const curSpuItem = inject("curSpuItem") as Ref<SpuItem>;
 
-const addSkuHandle = () => {};
+const addSkuHandle = (row) => {
+  curSpuItem.value = row;
+  isComponentShow.value = 2;
+  isSpuListShow.value = false;
+};
 
 const addHandle = () => {
   isComponentShow.value = 1;

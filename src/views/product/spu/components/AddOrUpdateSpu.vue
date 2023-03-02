@@ -242,12 +242,6 @@ const rules = reactive<FormRules>({
     },
   ],
 });
-const resetForm = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.resetFields();
-  curSpuItem.value = {};
-  isComponentShow.value = 0;
-};
 
 // 删除添加的属性值tag
 const handleClose = (tag: string, row: any) => {
@@ -426,6 +420,12 @@ const submitForm = async (formEl: FormInstance | undefined) => {
       console.log("error submit!", fields);
     }
   });
+};
+const resetForm = (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  formEl.resetFields();
+  curSpuItem.value = {};
+  isComponentShow.value = 0;
 };
 </script>
 

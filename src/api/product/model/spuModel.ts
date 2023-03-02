@@ -8,7 +8,7 @@ export type SpuImageList = SpuImageItem[];
 
 export interface SpuSaleAttrValueItem {
   baseSaleAttrId: number;
-  id?: number;
+  id: number;
   saleAttrName: string;
   saleAttrValueName: string;
   spuId?: undefined;
@@ -18,7 +18,7 @@ export interface SpuSaleAttrList {
   baseSaleAttrId?: number;
   saleAttrName?: string;
   spuId?: number;
-  spuSaleAttrValueList?: SpuSaleAttrValueList;
+  spuSaleAttrValueList: SpuSaleAttrValueList;
 }
 
 export interface SpuItem {
