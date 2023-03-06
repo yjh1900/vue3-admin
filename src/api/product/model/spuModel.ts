@@ -1,6 +1,7 @@
 export interface SpuImageItem {
   id: number;
   imgName: string;
+  isDefault: string;
   imgUrl: string;
   spuId: number;
 }

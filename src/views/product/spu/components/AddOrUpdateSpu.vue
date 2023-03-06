@@ -293,7 +293,9 @@ onMounted(async () => {
 });
 // 获取更新的页面数据
 onMounted(async () => {
-  if (!Object.keys(curSpuItem.value).length) return;
+  console.log(curSpuItem);
+
+  if (!curSpuItem.value) return;
 
   const imgList = await getSpuImageListApi(curSpuItem.value.id as number);
   const attrValueList = await getSpuSaleAttrListApi(
@@ -395,7 +397,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(async (valid, fields) => {
     if (valid) {
-      const id = curSpuItem.value.id;
+      const id = curSpuItem.value?.id;
       const { spuName, tmId, description, spuImageList, spuSaleAttrList } =
         ruleForm;
       const data = {
@@ -424,7 +426,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 const resetForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.resetFields();
-  curSpuItem.value = {};
+  curSpuItem.value = null;
   isComponentShow.value = 0;
 };
 </script>

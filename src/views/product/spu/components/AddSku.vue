@@ -283,12 +283,15 @@ const setSkuDefaultImg = (row: SkuImageItem) => {
 const cancel = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.resetFields();
-  curSpuItem.value = {};
+  curSpuItem.value = null;
   isComponentShow.value = 0;
 };
 
 const submit = async () => {
-  await skuFormRef.value.validate();
+  console.log(123);
+
+  // await skuFormRef.value.validate();
+
   await addSkuApi({
     ...skuFormData,
     category3Id: categoryStore.category3Id as number,
@@ -322,8 +325,9 @@ const submit = async () => {
         };
       }),
   });
+
   ElMessage.success("添加SKU成功");
-  curSpuItem.value = {};
+  curSpuItem.value = null;
   isComponentShow.value = 0;
 };
 </script>

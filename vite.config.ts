@@ -3,12 +3,21 @@ import { resolve } from "path";
 
 import vue from "@vitejs/plugin-vue";
 import vueJsx from "@vitejs/plugin-vue-jsx";
+import viteMock from "vite-easy-mock";
 
 // https://vitejs.dev/config/
 export default defineConfig((mode: ConfigEnv) => {
   const env = loadEnv(mode.mode, process.cwd());
   return {
-    plugins: [vue(), vueJsx()],
+    plugins: [
+      vue(),
+      vueJsx(),
+      // https://www.npmjs.com/package/vite-easy-mock
+      viteMock({
+        dir: "",
+        pattern: "/mock", // /mock开头的请求会被拦截
+      }),
+    ],
     server: {
       // port: 8000,
       // open: true,
