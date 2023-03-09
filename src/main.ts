@@ -8,10 +8,19 @@ import router from "./router";
 import "./styles/index.scss";
 import ElSvg from "./components/SvgIcon/ElSvg";
 import "./permission";
+import registerPermissionDirective from "./directives/permission";
+
+import PermissionButton from "./components/PermissionButton/index.vue";
 
 const app = createApp(App);
 
 ElSvg(app);
+
+// 注册全局指令
+registerPermissionDirective(app);
+
+// 注册全局组件
+app.component("PermissionButton", PermissionButton);
 
 app
   .use(pinia)

@@ -23,7 +23,6 @@ service.interceptors.request.use((config) => {
   if (userInfoStore.token) {
     (<any>config.headers)["token"] = userInfoStore.token;
   }
-
   return config;
 });
 

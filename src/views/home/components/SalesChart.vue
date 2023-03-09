@@ -26,8 +26,6 @@ onMounted(() => {
 watch(
   () => props.data,
   () => {
-    console.log(111);
-
     const option = {
       title: {
         text: props.title,

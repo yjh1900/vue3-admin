@@ -29,7 +29,6 @@ export const staticRoutes: Array<RouteRecordRaw> = [
       hidden: true,
     },
   },
-
   {
     path: "/",
     component: () => import("@/layout/index.vue"),
@@ -46,12 +45,18 @@ export const staticRoutes: Array<RouteRecordRaw> = [
       },
     ],
   },
+];
 
+/**
+ * 定义动态路由
+ */
+export const allAsyncRoutes: Array<RouteRecordRaw> = [
   // 配置路由，会自动生成左侧菜单（sidebar）
   {
     path: "/product",
     component: () => import("@/layout/index.vue"),
     redirect: "/product/category/list",
+    name: "Product",
     meta: {
       title: "商品管理",
       icon: "ele-ShoppingBag",
@@ -101,19 +106,60 @@ export const staticRoutes: Array<RouteRecordRaw> = [
       },
     ],
   },
-
-  /* 匹配任意的路由 必须最后注册 */
+  // 权限管理
   {
-    path: "/:pathMatch(.*)",
-    name: "Any",
-    redirect: "/404",
+    path: "/acl",
+    component: () => import("@/layout/index.vue"),
+    redirect: "/acl/user/list",
+    name: "Acl",
     meta: {
-      hidden: true,
+      title: "权限管理",
+      icon: "ele-Setting",
     },
+    children: [
+      {
+        path: "user/list",
+        name: "User",
+        component: () => import("@/views/acl/user/index.vue"),
+        meta: {
+          title: "用户管理",
+        },
+      },
+      {
+        path: "role/list",
+        name: "Role",
+        component: () => import("@/views/acl/role/index.vue"),
+        meta: {
+          title: "角色管理",
+        },
+      },
+      {
+        path: "role/auth",
+        name: "RoleAuth",
+        component: () => import("@/views/acl/role/components/RoleAuth.vue"),
+        meta: {
+          hidden: true,
+          title: "角色管理",
+        },
+      },
+      {
+        path: "permission/list",
+        name: "Permission",
+        component: () => import("@/views/acl/permission/index.vue"),
+        meta: {
+          title: "菜单管理",
+        },
+      },
+    ],
   },
 ];
 
-/**
- * 定义动态路由
- */
-export const allAsyncRoutes: Array<RouteRecordRaw> = [];
+/* 匹配任意的路由 必须最后注册 */
+export const anyRoute = {
+  path: "/:pathMatch(.*)",
+  name: "Any",
+  redirect: "/404",
+  meta: {
+    hidden: true,
+  },
+};

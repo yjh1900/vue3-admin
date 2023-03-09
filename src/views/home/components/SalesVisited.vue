@@ -65,9 +65,7 @@ const curSelect = ref("day");
 const activeTab = ref("sales");
 const homeStore = useHomeStore();
 
-const handleClick = (tab: TabsPaneContext, event: Event) => {
-  console.log(tab, event);
-};
+const handleClick = (tab: TabsPaneContext, event: Event) => {};
 
 const daySelect = () => {
   let start, end;

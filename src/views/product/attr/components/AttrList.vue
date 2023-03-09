@@ -6,6 +6,7 @@
         :icon="Plus"
         @click="addHandle()"
         :disabled="!categoryStore.category3Id"
+        v-permission="'btn.Attr.add'"
         >添加属性</el-button
       >
       <el-table v-loading="loading" :data="attrList" class="mt-20" border>
