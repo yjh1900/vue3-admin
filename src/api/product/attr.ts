@@ -21,6 +21,11 @@ export const getAttrListApi = () => {
   );
 };
 
+/**
+ * @description:
+ * @param {number} attrId
+ * @return {*}
+ */
 export const deleteAttrApi = (attrId: number) => {
   return request.delete<Api, null>(Api.deleteAttr + `/${attrId}`);
 };
@@ -29,6 +34,11 @@ export const deleteAttrApi = (attrId: number) => {
 //     return request.get<Api, AttrListData>(Api.deleteAttr + `/${attrId}`);
 //   };
 
+/**
+ * @description:
+ * @param {AttrListData} data
+ * @return {*}
+ */
 export const addAttrValueListApi = (data: AttrListData) => {
   return request.post<Api, null>(Api.addAttrValueList, data);
 };

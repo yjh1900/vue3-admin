@@ -26,9 +26,7 @@ const registerPermissionDirective = (app: App) => {
 
   app.directive("permission", (el, binding) => {
     // 这会在 `mounted` 和 `updated` 时都调用
-    // el就是绑定指令的DOM元素
-    // binding代表指令信息对象（包含指令名称，指令值）
-    // console.log(el, binding);
+    // el就是绑定指令的DOM 
     const userInfoStore = useUserInfoStore();
     if (!userInfoStore.buttons.includes(binding.value)) {
       el.remove();

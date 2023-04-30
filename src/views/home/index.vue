@@ -33,6 +33,7 @@
     </el-row>
     <SalesVisited class="mt-10" />
     <CategoryRank class="mt-10" />
+    <BMap />
   </div>
 </template>
 
@@ -49,6 +50,7 @@ import BarChart from "./components/BarChart.vue";
 import ProgressChart from "./components/ProgressChart.vue";
 import SalesVisited from "./components/SalesVisited.vue";
 import CategoryRank from "./components/CategoryRank.vue";
+import BMap from "./components/BMap.vue";
 
 import { ref, onMounted, computed } from "vue";
 import { useUserInfoStore } from "@/stores/userInfo";

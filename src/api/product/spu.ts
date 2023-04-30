@@ -1,3 +1,13 @@
+/*
+ * @Author: round1900 954770705@qq.com
+ * @Date: 2023-02-21 20:03:13
+ * @LastEditors: round1900 954770705@qq.com
+ * @LastEditTime: 2023-03-10 10:51:23
+ * @FilePath: \vue3-admin\src\api\product\spu.ts
+ * @Description:
+ *
+ * Copyright (c) 2023 by round1900, All Rights Reserved.
+ */
 import request from "@/utils/request";
 import type {
   GetSpuListResponse,

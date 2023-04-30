@@ -10,9 +10,15 @@ const enum Api {
 export const getCategory1Api = () => {
   return request.get<any, CategoryList>(Api.getCategory1);
 };
+/**
+ * @description:
+ * @param {number} id
+ * @return {*}
+ */
 export const getCategory2Api = (id: number) => {
   return request.get<any, CategoryList>(Api.getCategory2 + `/${id}`);
 };
+
 export const getCategory3Api = (id: number) => {
   return request.get<any, CategoryList>(Api.getCategory3 + `/${id}`);
 };
